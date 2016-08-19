@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html ng-app="authModule">
+<head>
+<meta charset="ISO-8859-1">
+<title>Login</title>
+<script src="static/js/angular.min.js"></script>
+<script>
+var app = angular.module('authModule',[]);
+app.controller('ngLoginController', function($http,$window){
+	var vm = this;
+	vm.user = {};
+	vm.authenticateUser = function(user){
+		console.log(user);
+		$http({
+			method: 'POST',
+			url: '/auth/login',
+			data: JSON.stringify(user),
+			headers: {
+				"Content-Type": "application/json",
+				"x-access-token": "banana"
+			}
+		}).then(function(data){
+			console.log(data.data.jwt);
+			$window.localStorage['token'] = data.data.jwt;
+		});
+	};
+	vm.getUser = function() {
+		$http({
+			method: 'GET',
+			url: '/authentication/getuser'
+		}).then(function(data){
+			console.log(data.data);
+		})
+	}
+});
+
+app.component('loginComponent', {
+	controller: "ngLoginController as ctrl",
+	template: function($element, $attrs) {
+		return `
+			<form name="loginForm">
+				<input type="text" ng-model="ctrl.user.username" placeholder="username" />
+				<input type="text" ng-model="ctrl.user.password" placeholder="password" />
+				<input type="button" ng-click="ctrl.authenticateUser(ctrl.user);" value="submit" />
+			</form>
+		`
+	}
+});
+
+</script>
+</head>
+<body ng-controller="ngLoginController as login">
+	<h1>{{login.message}}</h1>
+	<login-component></login-component>
+	<button ng-click="login.getUser()">User Data</button>
+</body>
+</html>
